@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      canvas {
+        background: #eee;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>시작</h1>
+      <a href="/canvas/draw">step1. draw</a><br />
+      <a href="/canvas/move">step2. move</a><br />
+      <a href="/canvas/bounce">step3. bounce</a><br />
+      <a href="/canvas/paddle">step4. paddle</a><br />
+      <a href="/canvas/over">step5. game over</a><br />
+      <a href="/canvas/brick">step6. brick</a><br />
+      <a href="/canvas/collision">step7. collision</a><br />
+      <a href="/canvas/score">step8. score</a><br />
+      <a href="/canvas/mouseControl">step9. mouseControl</a><br />
+      <a href="/canvas/result">step10. result</a><br />
+    </div>
+    <div>
+      <canvas id="myCanvas" width="480" height="320"></canvas>
+    </div>
+    <script>
+      // JavaScript code goes here
+      var canvas = document.getElementById("myCanvas"); // 캔버스 참조
+      var ctx = canvas.getContext("2d"); // 2D 렌더링 컨텍스트 저장(실질적canvas페인팅도구)
+
+      // score
+      var score = 0;
+
+      // ball variables
+      var ballRadius = 10; // 반지름
+      let x = canvas.width / 2; // 공의 x좌표
+      let y = canvas.height - 30;
+      let dx = 2;
+      let dy = -2;
+
+      // paddle variables
+      var paddleHeight = 10;
+      var paddleWidth = 75; // 패들 너비
+      var paddleX = (canvas.width - paddleWidth) / 2; // 패들 x좌표
+      var rightPressed = false;
+      var leftPressed = false;
+
+      // brick variables
+      var brickRowCount = 3; // 세로
+      var brickColumnCount = 5; // 가로
+      var brickWidth = 75; // 너비
+      var brickHeight = 20; // 높이
+      var brickPadding = 10; // 간격
+      var brickOffsetTop = 30; // top간격
+      var brickOffsetLeft = 30; // left간격
+      var bricks = [];
+      for (var c = 0; c < brickColumnCount; c++) {
+        bricks[c] = [];
+        for (var r = 0; r < brickRowCount; r++) {
+          bricks[c][r] = { x: 0, y: 0, status: 1 };
+        }
+      }
+
+      // key event (false: bubbling, true: capturing)
+      document.addEventListener("keydown", keyDownHandler, false);
+      document.addEventListener("keyup", keyUpHandler, false);
+      document.addEventListener("mousemove", mouseMoveHandler, false);
+
+      // keyDownHandler
+      function keyDownHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+          rightPressed = true;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+          leftPressed = true;
+        }
+      }
+
+      // keyUpHandler
+      function keyUpHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+          rightPressed = false;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+          leftPressed = false;
+        }
+      }
+
+      // mouseMoveHandler
+      function mouseMoveHandler(e) {
+        var relativeX = e.clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+          paddleX = relativeX - paddleWidth / 2;
+        }
+      }
+
+      // drawBall
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      // drawPaddle
+      function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(
+          paddleX,
+          canvas.height - paddleHeight,
+          paddleWidth,
+          paddleHeight
+        );
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      // drawBricks
+      function drawBricks() {
+        for (var c = 0; c < brickColumnCount; c++) {
+          for (var r = 0; r < brickRowCount; r++) {
+            if (bricks[c][r].status == 1) {
+              var brickX = c * (brickWidth + brickPadding) + brickOffsetLeft; // brick x좌표
+              var brickY = r * (brickHeight + brickPadding) + brickOffsetTop; // brick y좌표
+              bricks[c][r].x = brickX;
+              bricks[c][r].y = brickY;
+              ctx.beginPath();
+              ctx.rect(brickX, brickY, brickWidth, brickHeight);
+              ctx.fillStyle = "#0095DD";
+              ctx.fill();
+              ctx.closePath();
+            }
+          }
+        }
+      }
+
+      // collisionDetection
+      function collisionDetection() {
+        for (var c = 0; c < brickColumnCount; c++) {
+          for (var r = 0; r < brickRowCount; r++) {
+            var b = bricks[c][r];
+
+            if (b.status == 1) {
+              if (
+                x > b.x &&
+                x < b.x + brickWidth &&
+                y > b.y &&
+                y < b.y + brickHeight
+              ) {
+                dy = -dy;
+                b.status = 0;
+                score++;
+                if (score == brickRowCount * brickColumnCount) {
+                  alert("You Win, Congratulations!");
+                  document.location.reload();
+                  clearInterval(interval);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // drawScore
+      function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Score: " + score, 8, 20);
+      }
+
+      // draw
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // clear canvas
+        drawBall();
+        drawPaddle();
+        drawBricks();
+        collisionDetection();
+        drawScore();
+
+        // ball xy init
+        if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+          dx = -dx;
+        }
+        if (y + dy < ballRadius) {
+          dy = -dy;
+        } else if (y + dy > canvas.height - ballRadius) {
+          if (x > paddleX && x < paddleX + paddleWidth) {
+            dy = -dy;
+          } else {
+            alert("GAME OVER");
+            // document.location.reload();
+            clearInterval(interval);
+          }
+        }
+
+        // paddle xy init
+        if (rightPressed) {
+          paddleX += 7;
+          if (paddleX + paddleWidth > canvas.width) {
+            paddleX = canvas.width - paddleWidth;
+          }
+        } else if (leftPressed) {
+          paddleX -= 7;
+          if (paddleX < 0) {
+            paddleX = 0;
+          }
+        }
+
+        x += dx;
+        y += dy;
+      }
+
+      // interval
+      var interval = setInterval(draw, 10);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      canvas {
+        background: #eee;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>시작</h1>
+      <a href="/canvas/draw">step1. draw</a><br />
+      <a href="/canvas/move">step2. move</a><br />
+      <a href="/canvas/bounce">step3. bounce</a><br />
+      <a href="/canvas/paddle">step4. paddle</a><br />
+      <a href="/canvas/over">step5. game over</a><br />
+      <a href="/canvas/brick">step6. brick</a><br />
+      <a href="/canvas/collision">step7. collision</a><br />
+      <a href="/canvas/score">step8. score</a><br />
+      <a href="/canvas/mouseControl">step9. mouseControl</a><br />
+      <a href="/canvas/result">step10. result</a><br />
+    </div>
+    <div>
+      <canvas id="myCanvas" width="480" height="320"></canvas>
+    </div>
+    <script>
+      // JavaScript code goes here
+      var canvas = document.getElementById("myCanvas"); // 캔버스 참조
+      var ctx = canvas.getContext("2d"); // 2D 렌더링 컨텍스트 저장(실질적canvas페인팅도구)
+
+      // 꽉찬 사각형
+      ctx.beginPath(); // 시작
+      ctx.rect(20, 40, 50, 50); // 사각형 정의(left20px, top40px, width50px, height50px)
+      ctx.fillStyle = "#FF0000"; // 내부 페인팅
+      ctx.fill(); // 내부 페인팅 적용
+      ctx.closePath(); // 끝
+
+      // 꽉찬 원형
+      ctx.beginPath();
+      ctx.arc(240, 160, 20, 0, Math.PI * 2, false); // 원형 정의(x좌표, y좌표, 반지름, 원 지우기, 원 채우기 ,false시계방향/true반시계방향)
+      ctx.fillStyle = "green";
+      ctx.fill();
+      ctx.closePath();
+
+      // 테두리 사각형
+      ctx.beginPath();
+      ctx.rect(160, 10, 100, 40);
+      ctx.strokeStyle = "rgba(0, 0, 255, 0.5)"; // 외부 페인팅(r, g, b, opacity)
+      ctx.stroke(); // 외부 페인팅 적용
+      ctx.closePath();
+    </script>
+  </body>
+</html>

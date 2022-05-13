@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      canvas {
+        background: #eee;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>시작</h1>
+      <a href="/canvas/draw">step1. draw</a><br />
+      <a href="/canvas/move">step2. move</a><br />
+      <a href="/canvas/bounce">step3. bounce</a><br />
+      <a href="/canvas/paddle">step4. paddle</a><br />
+      <a href="/canvas/over">step5. game over</a><br />
+      <a href="/canvas/brick">step6. brick</a><br />
+      <a href="/canvas/collision">step7. collision</a><br />
+      <a href="/canvas/score">step8. score</a><br />
+      <a href="/canvas/mouseControl">step9. mouseControl</a><br />
+      <a href="/canvas/result">step10. result</a><br />
+    </div>
+    <div>
+      <canvas id="myCanvas" width="480" height="320"></canvas>
+    </div>
+    <script>
+      // JavaScript code goes here
+      var canvas = document.getElementById("myCanvas"); // 캔버스 참조
+      var ctx = canvas.getContext("2d"); // 2D 렌더링 컨텍스트 저장(실질적canvas페인팅도구)
+
+      let x = canvas.width / 2;
+      let y = canvas.height - 30;
+      let dx = 2;
+      let dy = -2;
+
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+        x += dx;
+        y += dy;
+      }
+      setInterval(draw, 10);
+    </script>
+  </body>
+</html>

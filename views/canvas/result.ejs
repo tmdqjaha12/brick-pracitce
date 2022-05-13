@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      canvas {
+        background: #eee;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>시작</h1>
+      <a href="/canvas/draw">step1. draw</a><br />
+      <a href="/canvas/move">step2. move</a><br />
+      <a href="/canvas/bounce">step3. bounce</a><br />
+      <a href="/canvas/paddle">step4. paddle</a><br />
+      <a href="/canvas/over">step5. game over</a><br />
+      <a href="/canvas/brick">step6. brick</a><br />
+      <a href="/canvas/collision">step7. collision</a><br />
+      <a href="/canvas/score">step8. score</a><br />
+      <a href="/canvas/mouseControl">step9. mouseControl</a><br />
+      <a href="/canvas/result">step10. result</a><br />
+    </div>
+    <div>
+      <canvas id="myCanvas" width="480" height="320"></canvas>
+    </div>
+    <script>
+      // JavaScript code goes here
+      var canvas = document.getElementById("myCanvas"); // 캔버스 참조
+      var ctx = canvas.getContext("2d"); // 2D 렌더링 컨텍스트 저장(실질적canvas페인팅도구)
+
+      // score
+      var score = 0;
+
+      // life
+      var lives = 3;
+
+      // ball variables
+      var ballRadius = 10; // 반지름
+      let x = canvas.width / 2; // 공의 x좌표
+      let y = canvas.height - 30;
+      let dx = 2;
+      let dy = -2;
+
+      // paddle variables
+      var paddleHeight = 10;
+      var paddleWidth = 75; // 패들 너비
+      var paddleX = (canvas.width - paddleWidth) / 2; // 패들 x좌표
+      var rightPressed = false;
+      var leftPressed = false;
+
+      // brick variables
+      var brickRowCount = 3; // 세로
+      var brickColumnCount = 5; // 가로
+      var brickWidth = 75; // 너비
+      var brickHeight = 20; // 높이
+      var brickPadding = 10; // 간격
+      var brickOffsetTop = 30; // top간격
+      var brickOffsetLeft = 30; // left간격
+      var bricks = [];
+      for (var c = 0; c < brickColumnCount; c++) {
+        bricks[c] = [];
+        for (var r = 0; r < brickRowCount; r++) {
+          bricks[c][r] = { x: 0, y: 0, status: 1 };
+        }
+      }
+
+      // key event (false: bubbling, true: capturing)
+      document.addEventListener("keydown", keyDownHandler, false);
+      document.addEventListener("keyup", keyUpHandler, false);
+      document.addEventListener("mousemove", mouseMoveHandler, false);
+
+      // keyDownHandler
+      function keyDownHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+          rightPressed = true;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+          leftPressed = true;
+        }
+      }
+
+      // keyUpHandler
+      function keyUpHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+          rightPressed = false;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+          leftPressed = false;
+        }
+      }
+
+      // mouseMoveHandler
+      function mouseMoveHandler(e) {
+        var relativeX = e.clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+          paddleX = relativeX - paddleWidth / 2;
+        }
+      }
+
+      // drawBall
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      // drawPaddle
+      function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(
+          paddleX,
+          canvas.height - paddleHeight,
+          paddleWidth,
+          paddleHeight
+        );
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      // drawBricks
+      function drawBricks() {
+        for (var c = 0; c < brickColumnCount; c++) {
+          for (var r = 0; r < brickRowCount; r++) {
+            if (bricks[c][r].status == 1) {
+              var brickX = c * (brickWidth + brickPadding) + brickOffsetLeft; // brick x좌표
+              var brickY = r * (brickHeight + brickPadding) + brickOffsetTop; // brick y좌표
+              bricks[c][r].x = brickX;
+              bricks[c][r].y = brickY;
+              ctx.beginPath();
+              ctx.rect(brickX, brickY, brickWidth, brickHeight);
+              ctx.fillStyle = "#0095DD";
+              ctx.fill();
+              ctx.closePath();
+            }
+          }
+        }
+      }
+
+      // collisionDetection
+      function collisionDetection() {
+        for (var c = 0; c < brickColumnCount; c++) {
+          for (var r = 0; r < brickRowCount; r++) {
+            var b = bricks[c][r];
+
+            if (b.status == 1) {
+              if (
+                x > b.x &&
+                x < b.x + brickWidth &&
+                y > b.y &&
+                y < b.y + brickHeight
+              ) {
+                dy = -dy;
+                b.status = 0;
+                score++;
+                if (score == brickRowCount * brickColumnCount) {
+                  alert("You Win, Congratulations!");
+                  document.location.reload();
+                  // clearInterval(interval);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // drawScore
+      function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Score: " + score, 8, 20);
+      }
+
+      // drawLives
+      function drawLives() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Lives: " + lives, canvas.width - 65, 20);
+      }
+
+      // draw
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // clear canvas
+        drawBall();
+        drawPaddle();
+        drawBricks();
+        collisionDetection();
+        drawScore();
+        drawLives();
+
+        // ball xy init
+        if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+          dx = -dx;
+        }
+        if (y + dy < ballRadius) {
+          dy = -dy;
+        } else if (y + dy > canvas.height - ballRadius) {
+          if (x > paddleX && x < paddleX + paddleWidth) {
+            dy = -dy;
+          } else {
+            lives--;
+            if (!lives) {
+              alert("GAME OVER");
+              document.location.reload();
+              // clearInterval(interval);
+            } else {
+              x = canvas.width / 2;
+              y = canvas.height - 30;
+              dx = 2;
+              dy = -2;
+              paddleX = (canvas.width - paddleWidth) / 2;
+            }
+          }
+        }
+
+        // paddle xy init
+        if (rightPressed) {
+          paddleX += 7;
+          if (paddleX + paddleWidth > canvas.width) {
+            paddleX = canvas.width - paddleWidth;
+          }
+        } else if (leftPressed) {
+          paddleX -= 7;
+          if (paddleX < 0) {
+            paddleX = 0;
+          }
+        }
+
+        x += dx;
+        y += dy;
+        requestAnimationFrame(draw);
+      }
+
+      // interval
+      // var interval = setInterval(draw, 10); =>  requestAnimationFrame(draw);
+      draw();
+    </script>
+  </body>
+</html>
+
+<!-- 
+  자바스크립트에서 애니메이션을 구현하는 방법으로 new Date()를 사용한 타이머 함수를 만들어서 사용하게 된다. 즉 시작 시점과 종료 시점을
+직접 변수에 저장해 반복 실행하는 방법.
+
+  하지만 이런 방식은 여러 문제점이 존재한다. 먼저 불필요한 콜스택(callstack)이 지나치게 많다는 점이다. 화면에 많은 그리기 동작을 애니메
+이션으로 구현해도 실제로 표시 가능한 주사율에 영향을 받으므로 지나치게 높은 부하가 발생할 수 있다.
+
+  위와 같은 경우 필요한 해결책으로 requestAnimationFrame(반복할 함수) 이 있다.
+
+  1. requestAnimationFrame
+  - 백그라운드 동작 및 비활성화시 중지(성능 최적화)
+  - 최대 1ms(1/1000s)로 제한되며 1초에 60번 동작
+  - 다수의 애니메이션에도 각각 타이머 값을 생성 및 참조하지 않고 내부의 동일한 타이머 참조
+  - 속도 조절 불가능
+  - requestAnimationFrame은 IE 10버전부터 지원한다.
+  - 프레임의 부드러움
+
+  2. setInterval
+  - 같은 애니메이션을 동시에 여러 번 호출하는 경우 애니메이션이 꼬이면서 버벅임이 발생할 수 있다.(clearInterval필요)
+  - 속도 조절 가능
+
+-->
